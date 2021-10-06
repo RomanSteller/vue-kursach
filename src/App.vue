@@ -21,60 +21,68 @@
 
 <script>
 
-import {ref} from "vue";
+import {ref,defineComponent,onMounted} from "vue";
 import axios from 'axios'
 
 
-export default {
+export default defineComponent({
   name: 'App',
 
-  components: {
-  },
+  components: {},
 
-  async setup() {
+   setup() {
+     const posts = ref([]),
+           statuses = ref([]);
 
-    const posts = ref(await fetchPosts())
-    const statuses = ref(await fetchStatus())
+     onMounted(async () =>{
+        const res = await axios.get("http://127.0.0.1:8000/api/all-tasks"),
+              res1 = await axios.get('http://127.0.0.1:8000/api/all-status');
+        posts.value = res.data;
+        statuses.value = res1.data;
 
-    console.log(posts)
+     });
+     // async function fetchPosts() {
+     //   await axios.get('http://127.0.0.1:8000/api/all-tasks')
+     //       .then(res => {
+     //         posts.value = res.data
+     //       });
+     //   return posts
+     // }
+     //
+     // async function fetchStatus() {
+     //     await axios.get('http://127.0.0.1:8000/api/all-status')
+     //       .then(res => {
+     //         statuses.value = res.data
+     //
+     //       })
+     //   return {statuses}
+     // }
 
-    async function fetchPosts() {
-      const res = await axios.get('http://127.0.0.1:8000/api/all-tasks').then()
-      return res.data;
-    }
+     function onDragStart(e, item) {
+       e.dataTransfer.dropEffect = 'move'
+       e.dataTransfer.effectAllowed = 'move'
+       e.dataTransfer.setData('itemId', item.id.toString())
+     }
 
-    async function fetchStatus(){
-      const res = await axios.get('http://127.0.0.1:8000/api/all-status');
-      return res.data;
-    }
+     function onDrop(e, categoryId) {
+       const itemId = parseInt(e.dataTransfer.getData('itemId'))
 
-    function onDragStart(e, item) {
-      e.dataTransfer.dropEffect = 'move'
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('itemId', item.id.toString())
-    }
+       posts.value = posts.value.map(x => {
+         if (x.id === itemId)
+           x.status_id = categoryId
+         return x
+       })
+     }
 
-    function onDrop(e, categoryId) {
-      const itemId = parseInt(e.dataTransfer.getData('itemId'))
-      // console.log(items.value)
+     return {
+       statuses,
+       posts,
+       onDragStart,
+       onDrop
+     }
+   }
+})
 
-      posts.value = posts.value.map(x => {
-        if (x.id === itemId)
-          x.status_id = categoryId
-        return x
-      })
-    }
-
-    return {
-      statuses,
-      posts,
-      onDragStart,
-      onDrop,
-      fetchPosts,
-      fetchStatus
-    }
-  }
-}
 </script>
 
 <style>
@@ -84,15 +92,18 @@ export default {
   background: #2c3e50;
   margin-bottom: 10px;
 }
+
 .droppable h4 {
   color: white;
 }
+
 .draggable {
   background: white;
   padding: 5px;
   border-radius: 5px;
   margin-bottom: 5px;
 }
+
 .draggable h5 {
   margin: 0;
 }
@@ -144,6 +155,7 @@ export default {
 <!--        categoryId: 1-->
 <!--      },-->
 <!--    ])-->
+<!--    console.log(items);-->
 <!--    const categories = ref([-->
 <!--      {-->
 <!--        id: 0,-->
