@@ -1,5 +1,6 @@
 <template>
   <div>
+    <auth-form></auth-form>
     <div v-for="status in statuses"
          :key="status.id"
          @drop="onDrop($event, status.id)"
@@ -21,66 +22,57 @@
 
 <script>
 
-import {ref,defineComponent,onMounted} from "vue";
+import {ref, defineComponent, onMounted} from "vue";
 import axios from 'axios'
-
+import authForm from "@/components/authForm";
 
 export default defineComponent({
   name: 'App',
+  components:{
+    authForm
+  },
+  setup() {
+    const posts = ref(),
+          statuses = ref();
 
-  components: {},
+    onMounted(async () => {
+      const res = await axios.get("http://127.0.0.1:8000/api/all-tasks"),
+            res1 = await axios.get('http://127.0.0.1:8000/api/all-status');
+      posts.value = res.data[0];
+      statuses.value = res1.data[0];
 
-   setup() {
-     const posts = ref([]),
-           statuses = ref([]);
+    });
 
-     onMounted(async () =>{
-        const res = await axios.get("http://127.0.0.1:8000/api/all-tasks"),
-              res1 = await axios.get('http://127.0.0.1:8000/api/all-status');
-        posts.value = res.data;
-        statuses.value = res1.data;
+    function onDragStart(e, item) {
+      e.dataTransfer.dropEffect = 'move'
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('itemId', item.id.toString())
+    }
 
-     });
-     // async function fetchPosts() {
-     //   await axios.get('http://127.0.0.1:8000/api/all-tasks')
-     //       .then(res => {
-     //         posts.value = res.data
-     //       });
-     //   return posts
-     // }
-     //
-     // async function fetchStatus() {
-     //     await axios.get('http://127.0.0.1:8000/api/all-status')
-     //       .then(res => {
-     //         statuses.value = res.data
-     //
-     //       })
-     //   return {statuses}
-     // }
+    function onDrop(e, categoryId) {
+      const itemId = parseInt(e.dataTransfer.getData('itemId'))
+      console.log(posts);
+      posts.value = posts.value.map(x => {
+        if (x.id === itemId) {
+          x.status_id = categoryId
+          axios.post('http://127.0.0.1:8000/api/change-status', {
+            statusId: categoryId,
+            id: x.id
+          }).then(res => {
+            console.log(res.data.message);
+          });
+        }
+        return x
+      })
+    }
 
-     function onDragStart(e, item) {
-       e.dataTransfer.dropEffect = 'move'
-       e.dataTransfer.effectAllowed = 'move'
-       e.dataTransfer.setData('itemId', item.id.toString())
-     }
-
-     function onDrop(e, categoryId) {
-       const itemId = parseInt(e.dataTransfer.getData('itemId'))
-
-       posts.value = posts.value.map(x => {
-         if (x.id === itemId)
-           x.status_id = categoryId
-         return x
-       })
-     }
-
-     return {
-       statuses,
-       posts,
-       onDragStart,
-       onDrop
-     }
-   }
+    return {
+      statuses,
+      posts,
+      onDragStart,
+      onDrop
+    }
+  }
 })
 
 </script>
