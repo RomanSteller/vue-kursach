@@ -1,203 +1,109 @@
 <template>
-  <div>
-    <auth-form></auth-form>
-    <div v-for="status in statuses"
-         :key="status.id"
-         @drop="onDrop($event, status.id)"
-         class="droppable"
-         @dragover.prevent
-         @dragenter.prevent>
-      <h4>{{ status.status_name }}</h4>
-      <div v-for="post in posts.filter(x => x.status_id === status.id)"
-           @dragstart="onDragStart($event, post)"
-           class="draggable"
-           :key="post.id"
-           draggable="true">
-        <h5>{{ post.title }}</h5>
+  <div id="nav">
+    <header>
+      <div class="logo">
+        <h1>Home</h1>
       </div>
-    </div>
+      <div class="navigations">
+        <router-link to="/">Home</router-link>
+        <div v-if="!user">
+          <router-link to="/registration">Registration</router-link>
+          <router-link to="/auth">Login</router-link>
+        </div>
+        <div v-else>
+          <router-link :to="{name:'rooms',params:{id:user.id}}" >My rooms</router-link>
+          <a @click="logout" href="">Logout</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <router-view/>
+    </main>
   </div>
+
 
 </template>
 
 <script>
-
-import {ref, defineComponent, onMounted} from "vue";
-import axios from 'axios'
-import authForm from "@/components/authForm";
-
-export default defineComponent({
-  name: 'App',
-  components:{
-    authForm
-  },
-  setup() {
-    const posts = ref(),
-          statuses = ref();
-
-    onMounted(async () => {
-      const res = await axios.get("http://127.0.0.1:8000/api/all-tasks"),
-            res1 = await axios.get('http://127.0.0.1:8000/api/all-status');
-      posts.value = res.data[0];
-      statuses.value = res1.data[0];
-
-    });
-
-    function onDragStart(e, item) {
-      e.dataTransfer.dropEffect = 'move'
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('itemId', item.id.toString())
-    }
-
-    function onDrop(e, categoryId) {
-      const itemId = parseInt(e.dataTransfer.getData('itemId'))
-      console.log(posts);
-      posts.value = posts.value.map(x => {
-        if (x.id === itemId) {
-          x.status_id = categoryId
-          axios.post('http://127.0.0.1:8000/api/change-status', {
-            statusId: categoryId,
-            id: x.id
-          }).then(res => {
-            console.log(res.data.message);
-          });
+  import axios from "axios";
+  export default {
+    data(){
+      return{
+        user:null
+      }
+    },
+    async created() {
+      console.log(localStorage.getItem('token'));
+      const getToken = await axios.get('/api/user',{
+        headers:{
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
-        return x
-      })
-    }
-
-    return {
-      statuses,
-      posts,
-      onDragStart,
-      onDrop
+      });
+      console.log(getToken.data[0])
+      this.user = getToken.data[0]
+    },
+    methods:{
+      logout(){
+        localStorage.removeItem('token')
+      }
     }
   }
-})
 
 </script>
 
 <style>
-.droppable {
-  padding: 15px;
-  border-radius: 5px;
-  background: #2c3e50;
-  margin-bottom: 10px;
+
+.navigations{
+  display: flex;
+  justify-content: space-between;
 }
 
-.droppable h4 {
-  color: white;
-}
-
-.draggable {
-  background: white;
-  padding: 5px;
-  border-radius: 5px;
-  margin-bottom: 5px;
-}
-
-.draggable h5 {
+*{
   margin: 0;
+  padding: 0;
 }
+
+body{
+  background-color: #00bfff;
+}
+
+router-link{
+  margin-right: 30px;
+  font-size: 15px;
+}
+header{
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 30px;
+  background-color: white;
+  align-items: center;
+}
+
+main{
+  padding: 30px;
+}
+
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+
+}
+
+#nav a{
+  margin-right: 10px;
+  text-decoration: none;
+}
+
 </style>
-
-
-<!-- Тот же самый код только объекты уже определены  -->
-
-
-<!--<template>-->
-<!--  <div>-->
-<!--    <div v-for="category in categories"-->
-<!--         :key="category.id"-->
-<!--         @drop="onDrop($event, category.id)"-->
-<!--         class="droppable"-->
-<!--         @dragover.prevent-->
-<!--         @dragenter.prevent>-->
-<!--      <h4>{{ category.title }}</h4>-->
-<!--      <div v-for="item in items.filter(x => x.categoryId === category.id)"-->
-<!--           @dragstart="onDragStart($event, item)"-->
-<!--           :key="item.id"-->
-<!--           class="draggable"-->
-<!--           draggable="true">-->
-<!--        <h5>{{ item.title }}</h5>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</template>-->
-
-<!--<script>-->
-<!--import { ref } from 'vue'-->
-<!--export default {-->
-<!--  name: 'App',-->
-<!--  setup() {-->
-<!--    const items = ref([-->
-<!--      {-->
-<!--        id: 0,-->
-<!--        title: 'Audi',-->
-<!--        categoryId: 0-->
-<!--      },-->
-<!--      {-->
-<!--        id: 1,-->
-<!--        title: 'BMW',-->
-<!--        categoryId: 0-->
-<!--      },-->
-<!--      {-->
-<!--        id: 2,-->
-<!--        title: 'Cat',-->
-<!--        categoryId: 1-->
-<!--      },-->
-<!--    ])-->
-<!--    console.log(items);-->
-<!--    const categories = ref([-->
-<!--      {-->
-<!--        id: 0,-->
-<!--        title: 'Cars'-->
-<!--      },-->
-<!--      {-->
-<!--        id: 1,-->
-<!--        title: 'Animals'-->
-<!--      }-->
-<!--    ])-->
-<!--    function onDragStart(e, item) {-->
-<!--      e.dataTransfer.dropEffect = 'move'-->
-<!--      e.dataTransfer.effectAllowed = 'move'-->
-<!--      e.dataTransfer.setData('itemId', item.id.toString())-->
-<!--    }-->
-<!--    function onDrop(e, categoryId) {-->
-<!--      const itemId = parseInt(e.dataTransfer.getData('itemId'))-->
-<!--      items.value = items.value.map(x => {-->
-<!--        if (x.id === itemId)-->
-<!--          x.categoryId = categoryId-->
-<!--        return x-->
-<!--      })-->
-<!--    }-->
-<!--    return {-->
-<!--      items,-->
-<!--      categories,-->
-<!--      onDragStart,-->
-<!--      onDrop-->
-<!--    }-->
-<!--  }-->
-<!--}-->
-<!--</script>-->
-
-<!--<style scoped>-->
-<!--.droppable {-->
-<!--  padding: 15px;-->
-<!--  border-radius: 5px;-->
-<!--  background: #2c3e50;-->
-<!--  margin-bottom: 10px;-->
-<!--}-->
-<!--.droppable h4 {-->
-<!--  color: white;-->
-<!--}-->
-<!--.draggable {-->
-<!--  background: white;-->
-<!--  padding: 5px;-->
-<!--  border-radius: 5px;-->
-<!--  margin-bottom: 5px;-->
-<!--}-->
-<!--.draggable h5 {-->
-<!--  margin: 0;-->
-<!--}-->
-<!--</style>-->
