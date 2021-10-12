@@ -52,6 +52,9 @@
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+
+
 
 .navigations{
   display: flex;
@@ -65,6 +68,7 @@
 
 body{
   background-color: #00bfff;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 router-link{
