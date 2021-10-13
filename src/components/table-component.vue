@@ -1,5 +1,6 @@
 <template>
-  <div v-if="user" class="table">
+  <loader v-if="load"/>
+  <div v-if="user && !load" class="table">
     <div v-for="status in statuses"
          :key="status.id"
          @drop="onDrop($event, status.id)"
@@ -10,13 +11,14 @@
       <div v-for="post in posts.filter(x => x.status_id === status.id)"
            @dragstart="onDragStart($event, post)"
            class="draggable"
+           id="draggble"
            :key="post.id"
            draggable="true">
-        <h5>{{ post.title }}</h5>
+        <h5 class="btn-group">{{ post.title }}</h5>
       </div>
     </div>
   </div>
-  <div v-else>
+  <div v-else-if="!user && !load">
     <h1>Вы не авторизированны</h1>
   </div>
 </template>
@@ -26,31 +28,40 @@
 import {ref, defineComponent, onMounted} from "vue";
 import axios from 'axios'
 import {useRoute} from "vue-router";
+import loader from './loader-component'
 
 export default defineComponent({
   name: 'table-component',
   components:{
+    loader
   },
   setup() {
     const posts = ref(),
         statuses = ref(),
         user = ref(),
         route = useRoute(),
-        roomId = route.params.id
+        roomId = route.params.id,
+        load = ref(true);
 
     onMounted(async () => {
-      const getToken = await axios.get('/api/user',{
+      await axios.get('/api/user',{
         headers:{
           'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
+      }).then(res=>{
+        console.log(res.data)
+        user.value = res.data[0];
+        load.value =  false
+      }).catch(err=>{
+        console.log(err)
+        load.value = false
       });
 
       const res = await axios.post("api/tasks/"+roomId),
           res1 = await axios.get('/api/all-status');
-      console.log(res.data[0])
+      //
       posts.value = res.data[0];
       statuses.value = res1.data[0];
-      user.value = getToken.data[0];
     });
 
     function onDragStart(e, item) {
@@ -59,14 +70,14 @@ export default defineComponent({
       e.dataTransfer.setData('itemId', item.id.toString())
     }
 
-    function onDrop(e, categoryId) {
+    function onDrop(e, statusId) {
       const itemId = parseInt(e.dataTransfer.getData('itemId'))
       console.log(posts);
       posts.value = posts.value.map(x => {
         if (x.id === itemId) {
-          x.status_id = categoryId
+          x.status_id = statusId
           axios.post('/api/change-status', {
-            statusId: categoryId,
+            statusId: statusId,
             id: x.id
           }).then(res => {
             console.log(res.data.message);
@@ -81,7 +92,8 @@ export default defineComponent({
       posts,
       user,
       onDragStart,
-      onDrop
+      onDrop,
+      load
     }
   }
 })
@@ -101,8 +113,7 @@ export default defineComponent({
   border-radius: 10px;
   background: #2c3e50;
   margin-bottom: 10px;
-  height: 300px;
-
+  min-height: 300px;
 }
 
 .droppable h4 {
@@ -114,6 +125,7 @@ export default defineComponent({
   padding: 5px;
   border-radius: 5px;
   margin-bottom: 5px;
+  margin-top: 10px;
 }
 
 .draggable h5 {

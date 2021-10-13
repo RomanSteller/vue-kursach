@@ -2,7 +2,7 @@
   <div id="nav">
     <header>
       <div class="logo">
-        <h1>Home</h1>
+        <h1><router-link to="/" class="router-link-exact-active home">Home</router-link></h1>
       </div>
       <div class="navigations">
 <!--        <router-link to="/">Home</router-link>-->
@@ -102,6 +102,10 @@ main{
 #nav a.router-link-exact-active {
   color: #42b983;
 
+}
+
+#nav a.router-link-exact-active.home{
+  color: #2c3e50;
 }
 
 #nav a{

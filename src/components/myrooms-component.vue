@@ -1,12 +1,12 @@
 <template>
 <div>
+
     <div v-for="room in rooms" :key="room.id">
         <div class="name">
           {{room.id}}
           {{room.name}}
           <router-link :to="{name:'room',params:{id:room.id}}">Перейти в комнату</router-link>
         </div>
-
     </div>
 </div>
 </template>

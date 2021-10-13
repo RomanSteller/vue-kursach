@@ -1,5 +1,4 @@
 <template>
-
   <form action="" @submit.prevent style="padding-top: 30px">
     <div class="alert alert-danger" v-for="error in errors" :key="error">
       <strong>Danger!</strong> {{ error }}
@@ -16,7 +15,6 @@
     <div class="form-group">
       <a @click="checkAuthError" style="color:white; margin-bottom: 30px">Авторизация</a>
     </div>
-
   </form>
 </template>
 

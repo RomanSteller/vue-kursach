@@ -3,6 +3,7 @@ import RegisterComponent from '../components/register-component'
 import AuthorizeComponent from '../components/authorize-component'
 import TableComponent from '../components/table-component'
 import MyRoomsComponent from '../components/myrooms-component'
+import Home from "@/views/Home";
 
 
 const routes = [
@@ -29,7 +30,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: TableComponent
+    component: Home
   },
   {
     path: '/about',
