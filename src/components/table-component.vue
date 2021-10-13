@@ -72,8 +72,10 @@ export default defineComponent({
 
     function onDrop(e, statusId) {
       const itemId = parseInt(e.dataTransfer.getData('itemId'))
+      const id = user.value.id
       console.log(posts);
       posts.value = posts.value.map(x => {
+        if(x.executor_id === id) return x;
         if (x.id === itemId) {
           x.status_id = statusId
           axios.post('/api/change-status', {
