@@ -11,6 +11,7 @@
       <div v-for="post in posts.filter(x => x.status_id === status.id)"
            @dragstart="onDragStart($event, post)"
            class="draggable"
+           :class="{'my_class': post.executor_id === userId}"
            id="draggble"
            :key="post.id"
            draggable="true">
@@ -41,7 +42,8 @@ export default defineComponent({
         user = ref(),
         route = useRoute(),
         roomId = route.params.id,
-        load = ref(true);
+        load = ref(true),
+        userId = ref();
 
     onMounted(async () => {
       await axios.get('/api/user',{
@@ -51,6 +53,7 @@ export default defineComponent({
       }).then(res=>{
         console.log(res.data)
         user.value = res.data[0];
+        userId.value = user.value.id;
         load.value =  false
       }).catch(err=>{
         console.log(err)
@@ -59,7 +62,7 @@ export default defineComponent({
 
       const res = await axios.post("api/tasks/"+roomId),
           res1 = await axios.get('/api/all-status');
-      //
+
       posts.value = res.data[0];
       statuses.value = res1.data[0];
     });
@@ -72,10 +75,9 @@ export default defineComponent({
 
     function onDrop(e, statusId) {
       const itemId = parseInt(e.dataTransfer.getData('itemId'))
-      const id = user.value.id
-      console.log(posts);
       posts.value = posts.value.map(x => {
-        if(x.executor_id === id) return x;
+        console.log(x.executor_id +'хуй'+userId.value)
+        if(x.executor_id !== userId.value) return x;
         if (x.id === itemId) {
           x.status_id = statusId
           axios.post('/api/change-status', {
@@ -95,7 +97,8 @@ export default defineComponent({
       user,
       onDragStart,
       onDrop,
-      load
+      load,
+      userId
     }
   }
 })
@@ -103,6 +106,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+
+
+
 
 .table{
   display: grid;
@@ -128,6 +134,10 @@ export default defineComponent({
   border-radius: 5px;
   margin-bottom: 5px;
   margin-top: 10px;
+}
+
+.my_class{
+  background-color: aqua;
 }
 
 .draggable h5 {
