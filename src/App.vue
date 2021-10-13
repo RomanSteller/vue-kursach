@@ -5,7 +5,7 @@
         <h1>Home</h1>
       </div>
       <div class="navigations">
-        <router-link to="/">Home</router-link>
+<!--        <router-link to="/">Home</router-link>-->
         <div v-if="!user">
           <router-link to="/registration">Registration</router-link>
           <router-link to="/auth">Login</router-link>
@@ -39,7 +39,6 @@
           'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
       });
-      console.log(getToken.data[0])
       this.user = getToken.data[0]
     },
     methods:{

@@ -1,9 +1,10 @@
 <template>
 <div>
-    <div v-for="room in rooms" :key="room.id" style="font-family: ">
+    <div v-for="room in rooms" :key="room.id">
         <div class="name">
+          {{room.id}}
           {{room.name}}
-          <a href="#" class="btn-group" style="color: white">Перейти в комнату</a>
+          <router-link :to="{name:'room',params:{id:room.id}}">Перейти в комнату</router-link>
         </div>
 
     </div>

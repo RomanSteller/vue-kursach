@@ -19,13 +19,13 @@
   <div v-else>
     <h1>Вы не авторизированны</h1>
   </div>
-
 </template>
 
 <script>
 
 import {ref, defineComponent, onMounted} from "vue";
 import axios from 'axios'
+import {useRoute} from "vue-router";
 
 export default defineComponent({
   name: 'table-component',
@@ -34,8 +34,9 @@ export default defineComponent({
   setup() {
     const posts = ref(),
         statuses = ref(),
-        user = ref()
-
+        user = ref(),
+        route = useRoute(),
+        roomId = route.params.id
 
     onMounted(async () => {
       const getToken = await axios.get('/api/user',{
@@ -44,8 +45,9 @@ export default defineComponent({
         }
       });
 
-      const res = await axios.get("/api/all-tasks"),
+      const res = await axios.post("api/tasks/"+roomId),
           res1 = await axios.get('/api/all-status');
+      console.log(res.data[0])
       posts.value = res.data[0];
       statuses.value = res1.data[0];
       user.value = getToken.data[0];

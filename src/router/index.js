@@ -12,6 +12,11 @@ const routes = [
     component: MyRoomsComponent
   },
   {
+    path: '/my-rooms/room/:id',
+    name:'room',
+    component: TableComponent
+  },
+  {
     path:'/auth',
     name: 'auth',
     component: AuthorizeComponent
